@@ -1,4 +1,4 @@
-const version = "ver. 0.0.6";
+const version = document.getElementById("version").getAttribute("content");
 
 function defineProps(dict) {
   for (const key in dict) {
@@ -49,7 +49,8 @@ const app = new Vue({
           if (this.money.gte(120)) {
             this.messages.push({
               type: "warning",
-              html: `<h2>そろそろ疲れてきましたか？</h2><p><code>buyJuice(juice);</code>でジュースを買うことができます。ジュースの価格は<code>juicePrices</code>を見てください。</p><p>今はリンゴジュースだけが売られているので、<code>buyJuice("apple");</code>でリンゴジュースを購入できます。</p>`
+              title: "そろそろ疲れてきませんか？",
+              html: `<code>buyJuice(juice);</code>でジュースを買うことができます。ジュースの価格は<code>juicePrices</code>を見てください。</p><p>今はリンゴジュースだけが売られているので、<code>buyJuice("apple");</code>でリンゴジュースを購入できます。`,
             });
             this.state = "buy-juice";
             window.juicePrices = juicePrices;
@@ -74,15 +75,48 @@ const app = new Vue({
     buyJuice(juice) {
       this.showJuice = true;
 
+      if (window.juicePrices != juicePrices) {
+        this.messages.push({
+          type: "danger",
+          dismissible: true,
+          html: `あの、このジュースは偽物ではないですか？`,
+        });
+      }
+
       switch (juice) {
         case "apple":
-          if (this.money.gte(120)) {
-            this.money = this.money.sub(120);
+          if (!("apple" in juicePrices)) {
+            this.messages.push({
+              type: "danger",
+              dismissible: true,
+              html: `すみません…なんだかリンゴジュース切らしてたみたいです…。ご購入はまたのご機会ということで…。`,
+            });
+            return;
+          }
+          if (typeof juicePrices.apple != "number" || !isFinite(juicePrices.apple) || juicePrices < 0) {
+            this.messages.push({
+              type: "danger",
+              dismissible: true,
+              html: `やだ、このジュース腐ってる。`,
+            });
+            return;
+          }
+          if (juicePrices.apple < 50) {
+            this.messages.push({
+              type: "warning",
+              dismissible: true,
+              html: `もしかして、値切ろうとしていますか？さすがに${juicePrices.apple}円は安すぎます。`,
+            });
+            return;
+          }
+          if (this.money.gte(juicePrices.apple)) {
+            this.money = this.money.sub(juicePrices.apple);
             this.juice.apple = this.juice.apple.add(1);
             if (this.state == "buy-juice") {
               this.messages.push({
                 type: "success",
-                html: `<h2>ああ、おいしい！</h2><p>冷たいジュースが疲れた体に染み渡ります。心なしか疲労も取れてきた気がします。</p>`,
+                title: "ああ、おいしい！",
+                html: `冷たいジュースが疲れた体に染み渡ります。心なしか疲労も取れてきた気がします。`,
               });
               this.state = "bought-juice";
             }
@@ -105,5 +139,8 @@ setInterval(() => {
 
 app.messages.push({
   type: "primary",
-  html: `<h2>ようこそ</h2><p>DevToolsを開いて、コンソールから<code>incrementMoney();</code>を実行してください。</p><p>DevToolsはWindows/Linuxなら<kbd>F12</kbd>、Macなら<kbd>Command+Option+J</kbd>で開くことができます。</p>`
+  title: "ようこそ",
+  html: `<p>DevToolsを開いて、コンソールから<code>incrementMoney();</code>を実行してください。</p><p>DevToolsはWindows/Linuxなら<kbd>F12</kbd>、Macなら<kbd>Command+Option+J</kbd>で開くことができます。</p>`,
 });
+
+console.dir(app);
