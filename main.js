@@ -1,4 +1,4 @@
-const version = "ver. 0.0.5";
+const version = "ver. 0.0.6";
 
 function defineProps(dict) {
   for (const key in dict) {
@@ -105,5 +105,5 @@ setInterval(() => {
 
 app.messages.push({
   type: "primary",
-  html: `<h2>ようこそ</h2><p>DevToolsを開いて、コンソールから<code>incrementMoney();</code>を実行してください。</p>`
+  html: `<h2>ようこそ</h2><p>DevToolsを開いて、コンソールから<code>incrementMoney();</code>を実行してください。</p><p>DevToolsはWindows/Linuxなら<kbd>F12</kbd>、Macなら<kbd>Command+Option+J</kbd>で開くことができます。</p>`
 });
