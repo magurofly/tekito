@@ -16,6 +16,9 @@ defineProps({
 window.incrementMoney = Function("window._incrementMoney = true;");
 
 const juicePrices = {};
+const juiceStocks = {
+  apple: 100,
+};
 
 const app = new Vue({
   el: "#app",
@@ -40,7 +43,8 @@ const app = new Vue({
         case "initial":
           this.messages.push({
             type: "success",
-            html: `<h2>おめでとうございます！</h2><p>あなたはお金を稼ぎました。</p>`,
+            title: "おめでとうございます！",
+            html: `<p>あなたはお金を稼ぎました。</p>`,
           });
           this.state = "first-click";
           break;
@@ -50,7 +54,7 @@ const app = new Vue({
             this.messages.push({
               type: "warning",
               title: "そろそろ疲れてきませんか？",
-              html: `<code>buyJuice(juice);</code>でジュースを買うことができます。ジュースの価格は<code>juicePrices</code>を見てください。</p><p>今はリンゴジュースだけが売られているので、<code>buyJuice("apple");</code>でリンゴジュースを購入できます。`,
+              html: `<p><code>buyJuice(juice);</code>でジュースを買うことができます。ジュースの価格は<code>juicePrices</code>を見てください。</p><p>今はリンゴジュースだけが売られているので、<code>buyJuice("apple");</code>でリンゴジュースを購入できます。</p>`,
             });
             this.state = "buy-juice";
             window.juicePrices = juicePrices;
@@ -60,11 +64,12 @@ const app = new Vue({
           break;
         
         case "buy-juice":
-          this.fatigue = this.fatigue.add(1);
           break;
 
         case "bought-juice":
-          this.fatigue = this.fatigue.add(0.25);
+          break;
+
+        case "juice-energy":
           break;
 
         default:
@@ -79,7 +84,7 @@ const app = new Vue({
         this.messages.push({
           type: "danger",
           dismissible: true,
-          html: `あの、このジュースは偽物ではないですか？`,
+          html: `<p>あの、このジュースは偽物ではないですか？</p>`,
         });
       }
 
@@ -89,7 +94,7 @@ const app = new Vue({
             this.messages.push({
               type: "danger",
               dismissible: true,
-              html: `すみません…なんだかリンゴジュース切らしてたみたいです…。ご購入はまたのご機会ということで…。`,
+              html: `<p>すみません…なんだかリンゴジュース切らしてたみたいです…。ご購入はまたのご機会ということで…。</p>`,
             });
             return;
           }
@@ -97,7 +102,7 @@ const app = new Vue({
             this.messages.push({
               type: "danger",
               dismissible: true,
-              html: `やだ、このジュース腐ってる。`,
+              html: `<p>やだ、このジュース腐ってる。</p>`,
             });
             return;
           }
@@ -105,20 +110,43 @@ const app = new Vue({
             this.messages.push({
               type: "warning",
               dismissible: true,
-              html: `もしかして、値切ろうとしていますか？さすがに${juicePrices.apple}円は安すぎます。`,
+              html: `<p>もしかして、値切ろうとしていますか？さすがに${juicePrices.apple}円は安すぎます。</p>`,
             });
             return;
           }
           if (this.money.gte(juicePrices.apple)) {
             this.money = this.money.sub(juicePrices.apple);
+            if (--juiceStocks.apple == 0) {
+              juicePrices.apple = Infinity;
+              this.messages.push({
+                type: "warning",
+                title: "リンゴジュースはもう売り切れです！",
+                html: `<p>次の仕入れを待ってください。</p>`,
+              });
+            }
+            if (this.state == "juice.energy") {
+              this.fatigue = this.fatigue.div(1.5);
+            } else {
+              this.fatigue = this.fatigue.div(2);
+            }
             this.juice.apple = this.juice.apple.add(1);
             if (this.state == "buy-juice") {
               this.messages.push({
                 type: "success",
                 title: "ああ、おいしい！",
-                html: `冷たいジュースが疲れた体に染み渡ります。心なしか疲労も取れてきた気がします。`,
+                html: `<p>冷たいジュースが疲れた体に染み渡ります。心なしか疲労も取れてきた気がします。</p>`,
               });
               this.state = "bought-juice";
+            }
+            if (this.state == "bought-juice") {
+              if (this.fatigue.lt(1)) {
+                this.messages.push({
+                  type: "info",
+                  title: "リンゴジュースはおいしいですね！",
+                  html: `<p>疲れどころか体に活力がみなぎってきた気がします。</p>`,
+                });
+                this.state = "juice-energy";
+              }
             }
           }
         default:
