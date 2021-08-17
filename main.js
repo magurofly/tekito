@@ -142,5 +142,3 @@ app.messages.push({
   title: "ようこそ",
   html: `<p>DevToolsを開いて、コンソールから<code>incrementMoney();</code>を実行してください。</p><p>DevToolsはWindows/Linuxなら<kbd>F12</kbd>、Macなら<kbd>Command+Option+J</kbd>で開くことができます。</p>`,
 });
-
-console.dir(app);
