@@ -1,4 +1,19 @@
-window.incrementMoney = new Vue({
+function defineProps(dict) {
+  for (const key in dict) {
+    Object.defineProperty(window, key, {
+      configurable: false,
+      writable: true,
+      value: dict[key],
+    });
+  }
+}
+defineProps({
+  _incrementMoney: false,
+  _buyJuice: false,
+});
+window.incrementMoney = Function("window._incrementMoney = true;");
+
+const app = new Vue({
   el: "#app",
   data: {
     money: new Decimal(0),
@@ -33,7 +48,7 @@ window.incrementMoney = new Vue({
         case "first-click":
           if (this.money.gte(120)) {
             this.state = "buy-juice";
-            window.buyJuice = Function(`if (this.money.gte(120)) { this.money = this.money.sub(120); this.fatigue = this.fatigue.div(2); this.state = "bought-juice"; }`).bind(this);
+            window.buyJuice = Function("window._buyJuice = true;");
           }
           break;
         
@@ -49,5 +64,20 @@ window.incrementMoney = new Vue({
           console.log("う　笑");
       }
     },
+
+    buyJuice() {
+      if (this.money.gte(120)) {
+        this.money = this.money.sub(120);
+        this.fatigue = this.fatigue.div(2);
+        if (this.state == "buy-juice") this.state = "bought-juice";
+      }
+    }
   }
-}).incrementMoney;
+});
+
+setInterval(() => {
+  if (window._incrementMoney) app.incrementMoney();
+  window._incrementMoney = false;
+
+  if (window._buyJuice) app.buyJuice();
+}, 20);
